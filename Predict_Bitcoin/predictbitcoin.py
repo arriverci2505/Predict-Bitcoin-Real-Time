@@ -35,8 +35,14 @@ st.write("Khung thời gian: **15 Phút** | Sàn: **Kraken**")
 # Load Model
 @st.cache_resource
 def load_ai_model():
-    model = joblib.load("BTC_USD_ensemble.pkl")
-    with open("BTC_USD_features.txt", 'r') as f:
+    # Lấy đường dẫn hiện tại của file code
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    model_path = os.path.join(current_dir, "BTC_USD_ensemble.pkl")
+    features_path = os.path.join(current_dir, "BTC_USD_features.txt")
+    
+    model = joblib.load(model_path)
+    with open(features_path, 'r') as f:
         features = [line.strip() for line in f.readlines()]
     return model, features
 
@@ -80,5 +86,6 @@ while True:
                 
                 st.write(f"⏱️ Cập nhật lúc: {datetime.now().strftime('%H:%M:%S')}")
                 st.write(f"📊 Cường độ dự báo: `{prediction:+.4%}`")
+
 
     time.sleep(60) # Cập nhật mỗi phút một lần để tiết kiệm tài nguyên
