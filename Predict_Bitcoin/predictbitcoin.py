@@ -6,8 +6,6 @@ import os
 import numpy as np
 from datetime import datetime, timedelta
 import time
-
-import numpy as np
 from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import Ridge
 from sklearn.preprocessing import RobustScaler
@@ -15,18 +13,9 @@ from sklearn.preprocessing import RobustScaler
 # --- PHẢI CÓ ĐOẠN NÀY ĐỂ GIẢI MÃ FILE .PKL ---
 class EnsembleModel:
     def __init__(self):
-        self.models = {
-            'gbr': GradientBoostingRegressor(),
-            'rf': RandomForestRegressor(),
-            'ridge': Ridge()
-        }
+        self.models = {'gbr': GradientBoostingRegressor(), 'rf': RandomForestRegressor(), 'ridge': Ridge()}
         self.weights = None
         self.scaler = RobustScaler()
-        
-    def fit(self, X, y):
-        # Hàm này không cần thiết khi chạy App nhưng phải có để cấu trúc class đầy đủ
-        pass
-        
     def predict(self, X):
         X_scaled = self.scaler.transform(X)
         predictions = np.zeros(len(X))
@@ -34,21 +23,7 @@ class EnsembleModel:
             predictions += self.weights[name] * model.predict(X_scaled)
         return predictions
 
-    def get_feature_importance(self, feature_names):
-        importance_dict = {}
-        for name, model in self.models.items():
-            if hasattr(model, 'feature_importances_'):
-                for feat, imp in zip(feature_names, model.feature_importances_):
-                    if feat not in importance_dict:
-                        importance_dict[feat] = []
-                    importance_dict[feat].append(imp)
-        avg_importance = {feat: np.mean(imps) for feat, imps in importance_dict.items()}
-        return sorted(avg_importance.items(), key=lambda x: x[1], reverse=True)
-# ----------------------------------------------
-# --- CẤU HÌNH TRANG ---
-st.set_page_config(page_title="BTC AI Signal", page_icon="📈")
-
-# --- HÀM TÍNH TOÁN CHỈ BÁO
+# --- HÀM TÍNH TOÁN CHỈ BÁO (Giữ nguyên logic của bạn) ---
 def engineer_features(df):
     df = df.copy()
     close_prev = df['Close'].shift(1)
@@ -267,85 +242,79 @@ def engineer_features(df):
 def get_data():
     try:
         exchange = ccxt.kraken()
-        ohlcv = exchange.fetch_ohlcv('BTC/USDT', timeframe='15m', limit=500)
+        # Tăng limit lên 1000 để đủ dữ liệu tính SMA 200
+        ohlcv = exchange.fetch_ohlcv('BTC/USDT', timeframe='15m', limit=1000)
         df = pd.DataFrame(ohlcv, columns=['Timestamp', 'Open', 'High', 'Low', 'Close', 'Volume'])
         df['Date'] = pd.to_datetime(df['Timestamp'], unit='ms') + timedelta(hours=7)
         df.set_index('Date', inplace=True)
-        df.columns = ['Open', 'High', 'Low', 'Close', 'Volume']
-        return df
-    except:
+        return df.drop(columns=['Timestamp'])
+    except Exception as e:
+        st.error(f"Lỗi kết nối sàn: {e}")
         return pd.DataFrame()
 
-# --- GIAO DIỆN STREAMLIT ---
+# --- CẤU HÌNH TRANG ---
+st.set_page_config(page_title="BTC AI Signal", page_icon="📈")
 st.title("🤖 BTC/USDT AI Trading Signal")
-st.write("Khung thời gian: **15 Phút** | Sàn: **Kraken**")
 
-# Load Model
 @st.cache_resource
 def load_ai_model():
-    # Lấy đường dẫn hiện tại của file code
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    model_path = os.path.join(current_dir, "BTC_USD_ensemble.pkl")
-    features_path = os.path.join(current_dir, "BTC_USD_features.txt")
-    
-    model = joblib.load(model_path)
-    with open(features_path, 'r') as f:
+    model = joblib.load(os.path.join(current_dir, "BTC_USD_ensemble.pkl"))
+    with open(os.path.join(current_dir, "BTC_USD_features.txt"), 'r') as f:
         features = [line.strip() for line in f.readlines()]
     return model, features
 
 model, feature_cols = load_ai_model()
-
-# Vùng cập nhật dữ liệu
 placeholder = st.empty()
 
+# --- VÒNG LẶP CHÍNH (ĐÃ SỬA) ---
 while True:
     with placeholder.container():
-        st.info("🔄 Đang lấy dữ liệu từ sàn Kraken...") # Thêm dòng này
+        st.info("🔄 Đang cập nhật dữ liệu và phân tích AI...")
+        
         df_raw = get_data()
         
-    if not df_raw.empty:
-        st.info("⚙️ AI đang phân tích các chỉ báo kỹ thuật...") # Thêm dòng này
-        df_features = engineer_features(df_raw.copy())
+        if not df_raw.empty:
+            df_features = engineer_features(df_raw.copy())
+            # Chỉ lấy hàng cuối cùng sau khi đã tính toán xong các chỉ báo
+            X_live = df_features[feature_cols].dropna()
             
-    df_raw = get_data()
-    if not df_raw.empty:
-        df_features = engineer_features(df_raw.copy())
-        X_live = df_features[feature_cols]
-        latest_row = X_live.dropna().tail(1)
+            if not X_live.empty:
+                latest_row = X_live.tail(1)
+                prediction = model.predict(latest_row.values)[0]
+                current_price = df_raw['Close'].iloc[-1]
+                
+                # --- BỘ LỌC TÍN HIỆU (THRESHOLD) ---
+                # Chỉ báo MUA/BÁN khi cường độ dự báo > 0.01% (tránh nhiễu)
+                threshold = 0.0001 
+                
+                if prediction > threshold:
+                    signal, color, icon = "MUA (LONG)", "#2ecc71", "🚀"
+                    tp, sl = current_price * 1.003, current_price * 0.998
+                elif prediction < -threshold:
+                    signal, color, icon = "BÁN (SHORT)", "#e74c3c", "🔻"
+                    tp, sl = current_price * 0.997, current_price * 1.002
+                else:
+                    signal, color, icon = "THEO DÕI (WAIT)", "#95a5a6", "⚖️"
+                    tp, sl = current_price, current_price
 
-        if not latest_row.empty:
-            prediction = model.predict(latest_row.values)[0]
-            current_price = df_raw['Close'].iloc[-1]
-            
-            # Tính TP/SL (Chốt lời 0.3%, Cắt lỗ 0.2%)
-            if prediction > 0:
-                signal, color, icon = "MUA (LONG)", "#2ecc71", "🚀"
-                tp, sl = current_price * 1.003, current_price * 0.998
-            else:
-                signal, color, icon = "BÁN (SHORT)", "#e74c3c", "🔻"
-                tp, sl = current_price * 0.997, current_price * 1.002
-
-            with placeholder.container():
-                # Hiển thị giá và tín hiệu
+                # --- HIỂN THỊ ---
                 st.markdown(f"""
-                <div style="background-color:{color}; padding:20px; border-radius:15px; text-align:center; color:white;">
-                    <h1 style="margin:0;">{icon} {signal}</h1>
-                    <h2 style="margin:0;">${current_price:,.2f}</h2>
-                </div>
+                    <div style="background-color:{color}; padding:20px; border-radius:15px; text-align:center; color:white;">
+                        <h1 style="margin:0;">{icon} {signal}</h1>
+                        <h2 style="margin:0;">${current_price:,.2f}</h2>
+                    </div>
                 """, unsafe_allow_html=True)
 
-                # Hiển thị TP/SL
-                col1, col2 = st.columns(2)
-                col1.metric("🎯 Chốt lời (TP)", f"${tp:,.2f}")
-                col2.metric("⚠️ Cắt lỗ (SL)", f"${sl:,.2f}")
+                if signal != "THEO DÕI (WAIT)":
+                    col1, col2 = st.columns(2)
+                    col1.metric("🎯 Chốt lời (TP)", f"${tp:,.2f}")
+                    col2.metric("⚠️ Cắt lỗ (SL)", f"${sl:,.2f}")
                 
-                st.write(f"⏱️ Cập nhật lúc: {datetime.now().strftime('%H:%M:%S')}")
-                st.write(f"📊 Cường độ dự báo: `{prediction:+.4%}`")
+                st.write(f"📊 Cường độ dự báo: `{prediction:+.6%}`")
+                st.caption(f"⏱️ Cập nhật cuối: {datetime.now().strftime('%H:%M:%S')}")
 
+        else:
+            st.warning("Không thể lấy dữ liệu từ Kraken. Đang thử lại...")
 
-    time.sleep(60) # Cập nhật mỗi phút một lần để tiết kiệm tài nguyên
-
-
-
-
+    time.sleep(60) # Nghỉ 60 giây trước khi lặp lại
