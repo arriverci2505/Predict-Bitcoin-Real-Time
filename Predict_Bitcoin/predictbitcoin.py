@@ -300,76 +300,62 @@ while True:
             else:
                 sig, col, icon = "HOLD (NEUTRAL)", "#f1c40f", "⚖️"
 
-            with placeholder.container():
-                col_left, col_right = st.columns([1, 1.2])
-                with col_left:
-                    st.title("BITCOIN ALPHA: NEURAL PREDICTOR")
+        # --- PHẦN HIỂN THỊ CHIA ĐÔI MÀN HÌNH ---
+        with placeholder.container():
+            # Chia làm 2 cột với tỷ lệ 1:1.2 (bên phải chart rộng hơn chút cho dễ nhìn)
+            col_left, col_right = st.columns([1, 1.2])
+        
+            # --- CỘT TRÁI: QUẢN LÝ LỆNH ---
+            with col_left:
+                # Banner Tín hiệu (Dựa theo ảnh bạn gửi)
+                st.markdown(f"""
+                    <div style="background-color:{col}22; border: 2px solid {col}; padding:20px; border-radius:15px; text-align:center;">
+                        <h1 style="color:{col}; margin:0; font-size: 35px;">{icon} {sig}</h1>
+                        <h2 style="color:white; margin:10px 0;">${price:,.2f}</h2>
+                    </div>
+                """, unsafe_allow_html=True)
+        
+                st.write("---")
+                
+                # Phần TP/SL và Chi tiết
+                if "HOLD" not in sig:
+                    c1, c2 = st.columns(2)
+                    c1.metric("🎯 Chốt lời (TP)", f"${tp:,.1f}")
+                    c2.metric("⚠️ Cắt lỗ (SL)", f"${sl:,.1f}")
                     
-                    # Hàng 1: Chỉ số chính
-                    m1, m2, m3, m4 = st.columns(4)
-                    m1.metric("BTC Price", f"${price:,.2f}")
-                    m2.metric("AI Confidence", f"{prediction:+.5%}")
-                    m3.metric("Signal Status", sig)
-                    m4.metric("Last Update", datetime.now().strftime('%H:%M:%S'))
-    
-                    # Hàng 2: Banner Tín hiệu
-                    st.markdown(f"""
-                        <div style="background-color:{col}22; border: 2px solid {col}; padding:30px; border-radius:20px; text-align:center;">
-                            <h1 style="color:{col}; margin:0; font-size: 50px;">{icon} {sig}</h1>
-                            <p style="color:white; font-size:18px; opacity:0.8; margin-top:10px;">
-                                Model: Ensemble AI v1.0 | Khung nến: 15 Phút
-                            </p>
-                        </div>
-                    """, unsafe_allow_html=True)
-    
-                    # Hàng 3: Quản lý lệnh
-                    st.write("---")
-                    if sig != "HOLD (NEUTRAL)":
-                        st.subheader("🛡️ Chiến lược mục tiêu")
-                        k1, k2, k3 = st.columns(3)
-                        if "BUY" in sig:
-                            k1.metric("Vùng Entry", f"< ${price:,.1f}")
-                            k2.metric("Chốt lời (TP)", f"${price*1.003:,.1f}")
-                            k3.metric("Cắt lỗ (SL)", f"${price*0.998:,.1f}")
-                        else:
-                            k1.metric("Vùng Entry", f"> ${price:,.1f}")
-                            k2.metric("Chốt lời (TP)", f"${price*0.997:,.1f}")
-                            k3.metric("Cắt lỗ (SL)", f"${price*1.002:,.1f}")
-                    else:
-                        st.warning("⚠️ Tín hiệu yếu (Nhiễu). KHÔNG vào lệnh, tiếp tục đứng ngoài quan sát (HOLD).")
-                with col_right:
-                    # Hàng 4: Trading View
-                    st.write("---")
-                    st.subheader("📈 Real-time Market Chart")
-                    
-                    # Mã nhúng Widget TradingView
-                    tradingview_widget = f"""
-                        <div class="tradingview-widget-container" style="height:500px;">
-                            <div id="tradingview_chart"></div>
-                            <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-                            <script type="text/javascript">
-                            new TradingView.widget({{
-                                "autosize": true,
-                                "symbol": "KRAKEN:BTCUSDT",
-                                "interval": "15",
-                                "timezone": "Asia/Ho_Chi_Minh",
-                                "theme": "dark",
-                                "style": "1",
-                                "locale": "vi_VN",
-                                "toolbar_bg": "#f1f3f6",
-                                "enable_publishing": false,
-                                "hide_top_toolbar": false,
-                                "save_image": false,
-                                "container_id": "tradingview_chart"
-                            }});
-                            </script>
-                        </div>
-                    """
-                    
-                    # Hiển thị biểu đồ với chiều cao 500px
-                    components.html(tradingview_widget, height=520)
+                    st.markdown(f"**Cường độ dự báo:** `{prediction:+.6%}`")
+                    st.caption(f"⏱️ Cập nhật cuối: {datetime.now().strftime('%H:%M:%S')}")
+                else:
+                    st.warning("⚖️ Hệ thống đang ở trạng thái HOLD - Chờ tín hiệu rõ ràng hơn.")
+        
+            # --- CỘT PHẢI: TRADINGVIEW CHART ---
+            with col_right:
+                st.markdown("### 📈 Real-time Market Chart")
+                # Mã nhúng TradingView
+                tv_widget = f"""
+                    <div style="height:500px;">
+                        <div id="tv_chart_main" style="height:100%;"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+                        <script type="text/javascript">
+                        new TradingView.widget({{
+                            "autosize": true,
+                            "symbol": "KRAKEN:BTCUSDT",
+                            "interval": "15",
+                            "timezone": "Asia/Ho_Chi_Minh",
+                            "theme": "dark",
+                            "style": "1",
+                            "locale": "vi_VN",
+                            "enable_publishing": false,
+                            "allow_symbol_change": true,
+                            "container_id": "tv_chart_main"
+                        }});
+                        </script>
+                    </div>
+                """
+                st.components.v1.html(tv_widget, height=520)
 
     time.sleep(30)
+
 
 
 
