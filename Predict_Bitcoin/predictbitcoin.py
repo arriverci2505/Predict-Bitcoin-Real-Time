@@ -293,12 +293,16 @@ while True:
             
             if prediction > 0.0008:
                 sig, col, icon = "STRONG BUY", "#00ff88", "🔥"
+                tp, sl = price * 1.006, price * 0.997
             elif prediction > threshold:
                 sig, col, icon = "BUY", "#2ecc71", "📈"
+                tp, sl = price * 1.004, price * 0.998
             elif prediction < -0.0008:
                 sig, col, icon = "STRONG SELL", "#ff4b4b", "💀"
+                tp, sl = price * 0.994, price * 1.003
             elif prediction < -threshold:
                 sig, col, icon = "SELL", "#e74c3c", "📉"
+                tp, sl = price * 0.996, price * 1.002
             else:
                 sig, col, icon = "HOLD (NEUTRAL)", "#f1c40f", "⚖️"
 
@@ -357,3 +361,4 @@ while True:
                 st.components.v1.html(tv_widget, height=520)
 
     time.sleep(30)
+
