@@ -276,8 +276,6 @@ while True:
             df['Target_Max_Adverse'] = df['Low'].rolling(3).min().shift(-3) / df['Close'] - 1
             
             return df
-        # Ở đây tôi lược bớt để tập trung vào UI
-        from main_logic import engineer_features
         df_features = engineer_features(df_raw.copy())
         
         X_live = df_features[feature_cols].dropna().tail(1)
@@ -331,3 +329,4 @@ while True:
                     st.warning("Đang trong vùng giá đi ngang (Sideway) - Đứng ngoài quan sát.")
 
     time.sleep(30)
+
