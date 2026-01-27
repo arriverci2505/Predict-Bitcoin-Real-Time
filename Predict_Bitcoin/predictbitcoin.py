@@ -360,6 +360,7 @@ while True:
                 """
                 st.components.v1.html(tv_widget, height=520)
 
-    time.sleep(30)
+    time.sleep(60)
+
 
 
