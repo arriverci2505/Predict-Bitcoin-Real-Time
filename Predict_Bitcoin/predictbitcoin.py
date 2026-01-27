@@ -313,7 +313,7 @@ while True:
         
             # --- CỘT TRÁI: QUẢN LÝ LỆNH ---
             with col_left:
-                # Banner Tín hiệu (Dựa theo ảnh bạn gửi)
+                st.subheader("🤖 Bitcoin Alpha: Neural Predictor")
                 st.markdown(f"""
                     <div style="background-color:{col}22; border: 2px solid {col}; padding:20px; border-radius:15px; text-align:center;">
                         <h1 style="color:{col}; margin:0; font-size: 35px;">{icon} {sig}</h1>
@@ -361,4 +361,5 @@ while True:
                 st.components.v1.html(tv_widget, height=520)
 
     time.sleep(30)
+
 
