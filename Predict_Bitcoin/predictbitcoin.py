@@ -304,9 +304,9 @@ while True:
         st.info("🔄 Đang lấy dữ liệu từ sàn Kraken...") # Thêm dòng này
         df_raw = get_data()
         
-        if not df_raw.empty:
-            st.info("⚙️ AI đang phân tích các chỉ báo kỹ thuật...") # Thêm dòng này
-            df_features = engineer_features(df_raw.copy())
+    if not df_raw.empty:
+        st.info("⚙️ AI đang phân tích các chỉ báo kỹ thuật...") # Thêm dòng này
+        df_features = engineer_features(df_raw.copy())
             
     df_raw = get_data()
     if not df_raw.empty:
@@ -345,6 +345,7 @@ while True:
 
 
     time.sleep(60) # Cập nhật mỗi phút một lần để tiết kiệm tài nguyên
+
 
 
 
