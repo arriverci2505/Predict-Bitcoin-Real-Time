@@ -287,7 +287,9 @@ while True:
             price = df_raw['Close'].iloc[-1]
             
             # --- LOGIC TÍN HIỆU (THRESHOLD) ---
-            threshold = 0.00025 # Ngưỡng để tránh nhiễu
+            # Ngưỡng để tránh nhiễu
+            threshold = 0.00025
+            tp, sl = 0.0, 0.0
             
             if prediction > 0.0008:
                 sig, col, icon = "STRONG BUY", "#00ff88", "🔥"
@@ -355,7 +357,3 @@ while True:
                 st.components.v1.html(tv_widget, height=520)
 
     time.sleep(30)
-
-
-
-
