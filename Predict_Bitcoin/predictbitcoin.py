@@ -7,6 +7,44 @@ import numpy as np
 from datetime import datetime, timedelta
 import time
 
+import numpy as np
+from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
+from sklearn.linear_model import Ridge
+from sklearn.preprocessing import RobustScaler
+
+# --- PHẢI CÓ ĐOẠN NÀY ĐỂ GIẢI MÃ FILE .PKL ---
+class EnsembleModel:
+    def __init__(self):
+        self.models = {
+            'gbr': GradientBoostingRegressor(),
+            'rf': RandomForestRegressor(),
+            'ridge': Ridge()
+        }
+        self.weights = None
+        self.scaler = RobustScaler()
+        
+    def fit(self, X, y):
+        # Hàm này không cần thiết khi chạy App nhưng phải có để cấu trúc class đầy đủ
+        pass
+        
+    def predict(self, X):
+        X_scaled = self.scaler.transform(X)
+        predictions = np.zeros(len(X))
+        for name, model in self.models.items():
+            predictions += self.weights[name] * model.predict(X_scaled)
+        return predictions
+
+    def get_feature_importance(self, feature_names):
+        importance_dict = {}
+        for name, model in self.models.items():
+            if hasattr(model, 'feature_importances_'):
+                for feat, imp in zip(feature_names, model.feature_importances_):
+                    if feat not in importance_dict:
+                        importance_dict[feat] = []
+                    importance_dict[feat].append(imp)
+        avg_importance = {feat: np.mean(imps) for feat, imps in importance_dict.items()}
+        return sorted(avg_importance.items(), key=lambda x: x[1], reverse=True)
+# ----------------------------------------------
 # --- CẤU HÌNH TRANG ---
 st.set_page_config(page_title="BTC AI Signal", page_icon="📈")
 
@@ -89,3 +127,4 @@ while True:
 
 
     time.sleep(60) # Cập nhật mỗi phút một lần để tiết kiệm tài nguyên
+
