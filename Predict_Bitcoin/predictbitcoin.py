@@ -5,6 +5,7 @@ import joblib
 import os
 import numpy as np
 from datetime import datetime, timedelta
+import streamlit.components.v1 as components
 import time
 from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import Ridge
@@ -334,6 +335,37 @@ while True:
                         k3.metric("Cắt lỗ (SL)", f"${price*1.002:,.1f}")
                 else:
                     st.warning("⚠️ Tín hiệu yếu (Nhiễu). KHÔNG vào lệnh, tiếp tục đứng ngoài quan sát (HOLD).")
+                # Hàng 4: Trading View
+                st.write("---")
+                st.subheader("📈 Real-time Market Chart")
+                
+                # Mã nhúng Widget TradingView
+                tradingview_widget = f"""
+                    <div class="tradingview-widget-container" style="height:500px;">
+                        <div id="tradingview_chart"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+                        <script type="text/javascript">
+                        new TradingView.widget({{
+                            "autosize": true,
+                            "symbol": "KRAKEN:BTCUSDT",
+                            "interval": "15",
+                            "timezone": "Asia/Ho_Chi_Minh",
+                            "theme": "dark",
+                            "style": "1",
+                            "locale": "vi_VN",
+                            "toolbar_bg": "#f1f3f6",
+                            "enable_publishing": false,
+                            "hide_top_toolbar": false,
+                            "save_image": false,
+                            "container_id": "tradingview_chart"
+                        }});
+                        </script>
+                    </div>
+                """
+                
+                # Hiển thị biểu đồ với chiều cao 500px
+                components.html(tradingview_widget, height=520)
 
     time.sleep(30)
+
 
