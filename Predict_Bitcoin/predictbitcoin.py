@@ -270,6 +270,8 @@ while True:
             
             # Direction (binary classification)
             df['Target_Direction_1'] = (df['Target_Return_1'] > 0).astype(int)
+
+            df = df.copy()
             
             # Risk metrics
             df['Target_Max_Favorable'] = df['High'].rolling(3).max().shift(-3) / df['Close'] - 1
@@ -329,4 +331,5 @@ while True:
                     st.warning("Đang trong vùng giá đi ngang (Sideway) - Đứng ngoài quan sát.")
 
     time.sleep(30)
+
 
