@@ -215,9 +215,11 @@ while True:
             # Shooting Star / Inverted Hammer
             df['Is_Shooting_Star'] = ((df['Upper_Shadow'] > 2 * df['Body_Size']) & 
                                       (df['Lower_Shadow'] < df['Body_Size'])).astype(int)
+
+            df = df.copy()
             
             # 7. LAG FEATURES (Temporal patterns)
-            
+        
             # Previous candles returns
             for lag in [1, 2, 3, 5, 10]:
                 df[f'Return_Lag_{lag}'] = df[f'Return_1'].shift(lag)
@@ -260,22 +262,8 @@ while True:
                 lambda x: (x.iloc[-1] > x).sum() / len(x) if len(x) > 0 else 0.5
             )
             
-            # 10. TARGETS (Multiple timeframes)
-            
-            # Future returns (chỉ để training, không dùng làm feature)
-            df['Target_Return_1'] = df['Close'].pct_change(1).shift(-1)   # Next candle
-            df['Target_Return_3'] = df['Close'].pct_change(3).shift(-3)   # 3 candles
-            df['Target_Return_5'] = df['Close'].pct_change(5).shift(-5)   # 5 candles
-            df['Target_Return_10'] = df['Close'].pct_change(10).shift(-10) # 10 candles
-            
-            # Direction (binary classification)
-            df['Target_Direction_1'] = (df['Target_Return_1'] > 0).astype(int)
 
             df = df.copy()
-            
-            # Risk metrics
-            df['Target_Max_Favorable'] = df['High'].rolling(3).max().shift(-3) / df['Close'] - 1
-            df['Target_Max_Adverse'] = df['Low'].rolling(3).min().shift(-3) / df['Close'] - 1
             
             return df
         df_features = engineer_features(df_raw.copy())
@@ -331,5 +319,6 @@ while True:
                     st.warning("Đang trong vùng giá đi ngang (Sideway) - Đứng ngoài quan sát.")
 
     time.sleep(30)
+
 
 
