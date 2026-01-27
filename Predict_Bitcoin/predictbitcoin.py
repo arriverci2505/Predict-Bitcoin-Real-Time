@@ -304,7 +304,7 @@ while True:
                 sig, col, icon = "SELL", "#e74c3c", "📉"
                 tp, sl = price * 0.996, price * 1.002
             else:
-                sig, col, icon = "HOLD (NEUTRAL)", "#f1c40f", "⚖️"
+                sig, col, icon = "HOLD", "#f1c40f", "⚖️"
 
         # --- PHẦN HIỂN THỊ CHIA ĐÔI MÀN HÌNH ---
         with placeholder.container():
@@ -332,7 +332,7 @@ while True:
                     st.markdown(f"**Cường độ dự báo:** `{prediction:+.6%}`")
                     st.caption(f"⏱️ Cập nhật cuối: {datetime.now().strftime('%H:%M:%S')}")
                 else:
-                    st.warning("⚖️ Hệ thống đang ở trạng thái HOLD - Chờ tín hiệu rõ ràng hơn.")
+                    st.warning("⚖️ Hệ thống đang ở trạng thái mất cân bằng - Chờ tín hiệu rõ ràng hơn.")
         
             # --- CỘT PHẢI: TRADINGVIEW CHART ---
             with col_right:
@@ -361,6 +361,7 @@ while True:
                 st.components.v1.html(tv_widget, height=520)
 
     time.sleep(60)
+
 
 
 
