@@ -300,7 +300,7 @@ while True:
                 sig, col, icon = "HOLD (NEUTRAL)", "#f1c40f", "⚖️"
 
             with placeholder.container():
-                st.title("🚀 BTC AI QUANT TERMINAL")
+                st.title("BITCOIN ALPHA: NEURAL PREDICTOR")
                 
                 # Hàng 1: Chỉ số chính
                 m1, m2, m3, m4 = st.columns(4)
@@ -336,3 +336,4 @@ while True:
                     st.warning("⚠️ Tín hiệu yếu (Nhiễu). KHÔNG vào lệnh, tiếp tục đứng ngoài quan sát (HOLD).")
 
     time.sleep(30)
+
