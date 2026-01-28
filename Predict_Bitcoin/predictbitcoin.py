@@ -41,7 +41,7 @@ def engineer_features(df):
     # Simple Moving Averages
     for period in [5, 10, 20, 50, 100, 200]:
         col[f'SMA_{period}'] = close_prev.rolling(period).mean()
-        df[f'SMA_Dist_{period}'] = (close_prev - df[f'SMA_{period}']) / close_prev
+        df[f'SMA_Dist_{period}'] = (close_prev - col[f'SMA_{period}']) / close_prev
     
     # Exponential Moving Averages
     for period in [9, 12, 21, 26, 50]:
@@ -371,6 +371,7 @@ while True:
                     """
                     st.components.v1.html(tv_widget, height=520)
     time.sleep(60)
+
 
 
 
