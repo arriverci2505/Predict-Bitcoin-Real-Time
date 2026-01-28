@@ -229,10 +229,6 @@ def engineer_features(df):
         lambda x: (x.iloc[-1] > x).sum() / len(x) if len(x) > 0 else 0.5
     )
 
-    # 10. TARGETS
-    col['Target_High_Pct'] = (df['High'].shift(-1) - df['Close']) / df['Close'] # Mục tiêu TP
-    col['Target_Low_Pct'] = (df['Low'].shift(-1) - df['Close']) / df['Close']  # Mục tiêu SL
-
     extra_features = pd.DataFrame(col, index=df.index)
 
     # 3. Dùng pd.concat để gộp tất cả vào df gốc trong MỘT LẦN DUY NHẤT
@@ -286,13 +282,7 @@ def load_ai_model():
     return model, features
 
 model, feature_cols = load_ai_model()
-# --- KHỞI TẠO FRAMEWORK GIAO DIỆN TĨNH ---
-# Chia cột ngoài vòng lặp để Chart không bị load lại
-col_left, col_right = st.columns([1, 1.2])
-st.write(f"Số lượng cột thực tế: {X_live.shape[1]}")
-missing_cols = [c for c in feature_cols if c not in df_features.columns]
-if missing_cols:
-    st.error(f"2 cột bị thiếu là: {missing_cols}")
+
 with col_right:
     st.markdown("### 📈 Real-time Market Chart")
     tv_widget = """
@@ -394,6 +384,7 @@ while True:
     
     # Nghỉ 0.5 giây để tiết kiệm CPU nhưng vẫn bắt kịp giây 00
     time.sleep(0.5)
+
 
 
 
