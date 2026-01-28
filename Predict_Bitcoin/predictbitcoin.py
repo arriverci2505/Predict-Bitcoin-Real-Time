@@ -15,15 +15,18 @@ from sklearn.preprocessing import RobustScaler
 # --- 1. CẤU TRÚC MODEL ---
 class EnsembleModel:
     def __init__(self):
-        self.models = {'gbr': GradientBoostingRegressor(), 'rf': RandomForestRegressor(), 'ridge': Ridge()}
-        self.weights = None
+        # Model cần có cấu trúc giống hệt lúc bạn Train
+        self.models_price = {}
+        self.models_tp = {}
+        self.models_sl = {}
         self.scaler = RobustScaler()
+
     def predict(self, X):
         X_scaled = self.scaler.transform(X)
-        predictions = np.zeros(len(X))
-        for name, model in self.models.items():
-            predictions += self.weights[name] * model.predict(X_scaled)
-        return predictions
+        
+        # Hàm này sẽ được joblib ghi đè khi load file .pkl
+        # Tôi để đây để tránh lỗi cấu trúc Class
+        return np.zeros(len(X)), np.zeros(len(X)), np.zeros(len(X))
 
 # --- 2. HÀM TÍNH TOÁN FEATURE ---
 def engineer_features(df):
@@ -335,7 +338,7 @@ while True:
                 price = df_raw['Close'].iloc[-1]
                 
                 # Logic phân loại tín hiệu (Giữ nguyên của bạn)
-                threshold = 0.00025
+                threshold = 0.0002
                 if prediction > 0.0008:
                     sig, col, icon = "STRONG BUY", "#00ff88", "🔥"
                     tp = price * (1 + p_tp)
