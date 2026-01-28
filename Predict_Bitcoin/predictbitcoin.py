@@ -261,12 +261,11 @@ st.markdown("""
 
 @st.cache_resource
 def load_ai_model():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    model = joblib.load(os.path.join(current_dir, "BTC_USD_ensemble.pkl"))
-    with open(os.path.join(current_dir, "BTC_USD_features.txt"), 'r') as f:
+    # Model này bây giờ là Multi-output Ensemble
+    model = joblib.load("BTC_USD_ensemble.pkl") 
+    with open("BTC_USD_features.txt", 'r') as f:
         features = [line.strip() for line in f.readlines()]
     return model, features
-
 model, feature_cols = load_ai_model()
 
 # --- KHỞI TẠO FRAMEWORK GIAO DIỆN TĨNH ---
@@ -315,23 +314,33 @@ while True:
             X_live = df_features[feature_cols].dropna().tail(1)
             
             if not X_live.empty:
-                prediction = model.predict(X_live.values)[0]
+                # Model mới trả về 3 mảng: (Xu hướng, Khoảng cách TP, Khoảng cách SL)
+                pred_price, pred_tp_dist, pred_sl_dist = model.predict(latest_row.values)
+                
+                # Lấy giá trị đầu tiên vì predict trả về list
+                p_move = pred_price[0]
+                p_tp = pred_tp_dist[0]
+                p_sl = pred_sl_dist[0]
                 price = df_raw['Close'].iloc[-1]
                 
                 # Logic phân loại tín hiệu (Giữ nguyên của bạn)
                 threshold = 0.00025
                 if prediction > 0.0008:
                     sig, col, icon = "STRONG BUY", "#00ff88", "🔥"
-                    tp, sl = price * 1.006, price * 0.997
+                    tp = price * (1 + p_tp)
+                    sl = price * (1 + p_sl)
                 elif prediction > threshold:
                     sig, col, icon = "BUY", "#2ecc71", "📈"
-                    tp, sl = price * 1.004, price * 0.998
+                    tp = price * (1 + p_tp)
+                    sl = price * (1 + p_sl)
                 elif prediction < -0.0008:
                     sig, col, icon = "STRONG SELL", "#ff4b4b", "💀"
-                    tp, sl = price * 0.994, price * 1.003
+                    tp = price * (1 + p_tp)
+                    sl = price * (1 + p_sl)
                 elif prediction < -threshold:
                     sig, col, icon = "SELL", "#e74c3c", "📉"
-                    tp, sl = price * 0.996, price * 1.002
+                    tp = price * (1 + p_tp)
+                    sl = price * (1 + p_sl)
                 else:
                     sig, col, icon = "HOLD", "#f1c40f", "⚖️"
                     tp, sl = 0.0, 0.0
@@ -364,6 +373,7 @@ while True:
     
     # Nghỉ 0.5 giây để tiết kiệm CPU nhưng vẫn bắt kịp giây 00
     time.sleep(0.5)
+
 
 
 
