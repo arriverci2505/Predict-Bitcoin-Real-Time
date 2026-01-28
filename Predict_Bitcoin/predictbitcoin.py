@@ -229,6 +229,10 @@ def engineer_features(df):
         lambda x: (x.iloc[-1] > x).sum() / len(x) if len(x) > 0 else 0.5
     )
 
+    # 10. TARGETS
+    df['Target_High_Pct'] = (df['High'].shift(-1) - df['Close']) / df['Close'] # Mục tiêu TP
+    df['Target_Low_Pct'] = (df['Low'].shift(-1) - df['Close']) / df['Close']  # Mục tiêu SL
+
     extra_features = pd.DataFrame(col, index=df.index)
 
     # 3. Dùng pd.concat để gộp tất cả vào df gốc trong MỘT LẦN DUY NHẤT
@@ -387,6 +391,7 @@ while True:
     
     # Nghỉ 0.5 giây để tiết kiệm CPU nhưng vẫn bắt kịp giây 00
     time.sleep(0.5)
+
 
 
 
