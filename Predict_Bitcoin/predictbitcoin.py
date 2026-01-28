@@ -221,7 +221,7 @@ def engineer_features(df):
     for period in [20, 50, 100]:
         returns = close_prev.pct_change(period)
         volatility = close_prev.pct_change().rolling(period).std()
-        df[f'Trend_Strength_{period}'] = returns / (volatility + 1e-10)
+        col[f'Trend_Strength_{period}'] = returns / (volatility + 1e-10)
     
     # Volatility regime
     col['Volatility_Regime'] = col['HV_20'].rolling(50).mean()
@@ -289,7 +289,10 @@ model, feature_cols = load_ai_model()
 # --- KHỞI TẠO FRAMEWORK GIAO DIỆN TĨNH ---
 # Chia cột ngoài vòng lặp để Chart không bị load lại
 col_left, col_right = st.columns([1, 1.2])
-
+st.write(f"Số lượng cột thực tế: {X_live.shape[1]}")
+missing_cols = [c for c in feature_cols if c not in df_features.columns]
+if missing_cols:
+    st.error(f"2 cột bị thiếu là: {missing_cols}")
 with col_right:
     st.markdown("### 📈 Real-time Market Chart")
     tv_widget = """
@@ -391,6 +394,7 @@ while True:
     
     # Nghỉ 0.5 giây để tiết kiệm CPU nhưng vẫn bắt kịp giây 00
     time.sleep(0.5)
+
 
 
 
