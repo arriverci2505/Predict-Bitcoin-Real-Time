@@ -125,3 +125,5 @@ Trend_Strength_50
 Trend_Strength_100
 Volatility_Regime
 Volatility_Percentile
+Target_High_Pct
+Target_Low_Pct
