@@ -268,17 +268,22 @@ def load_ai_model():
 model, feature_cols = load_ai_model()
 placeholder = st.empty()
 
+last_minute = -1
+
 # --- 5. VÒNG LẶP CHÍNH ---
 while True:
-    df_raw = get_data()
+    now = datetime.now() + timedelta(hours=7) # Giờ VN
+    current_minute = now.minute
 
-    if not df_raw.empty:
-            gc.collect() 
-                    
-            df_raw = get_data()
+    # Kiểm tra nếu đã bước sang phút mới
+    if current_minute != last_minute:
+        # 1. LẤY DỮ LIỆU MỚI NHẤT 
+        df_raw = get_data() 
+        
+        if not df_raw.empty:
+            # 2. TÍNH TOÁN FEATURES
             # Ép kiểu dữ liệu để thu gọn dung lượng
             df_features = engineer_features(df_raw).copy()
-            df_features = engineer_features(df_raw)
             X_live = df_features[feature_cols].dropna().tail(1)
             if not X_live.empty:
                     prediction = model.predict(X_live.values)[0]
@@ -303,7 +308,8 @@ while True:
                         tp, sl = price * 0.996, price * 1.002
                     else:
                         sig, col, icon = "HOLD", "#f1c40f", "⚖️"
-    
+                        
+            last_minute = current_minute
             # --- PHẦN HIỂN THỊ CHIA ĐÔI MÀN HÌNH ---
             with placeholder.container():
                 # Chia làm 2 cột với tỷ lệ 1:1.2 (bên phải chart rộng hơn chút cho dễ nhìn)
@@ -358,7 +364,8 @@ while True:
                         </div>
                     """
                     st.components.v1.html(tv_widget, height=520)
-    time.sleep(60)
+    time.sleep(1)
+
 
 
 
