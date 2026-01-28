@@ -278,42 +278,44 @@ placeholder = st.empty()
 while True:
     df_raw = get_data()
 
-    # Lấy số phút hiện tại
-    now = datetime.now()
-    current_minute = now.minute
-    
-    # Kiểm tra xem có phải là phút bắt đầu nến mới không (0, 15, 30, 45)
-    is_new_candle = current_minute % 15 == 0
-    
-    # Logic trong vòng lặp:
-    if is_new_candle or first_run:
-        if not df_raw.empty:
+    if not df_raw.empty:
             df_features = engineer_features(df_raw)
             X_live = df_features[feature_cols].dropna().tail(1)
+
+                # Lấy số phút hiện tại
+            now = datetime.now()
+            current_minute = now.minute
+            first_run = True
+            # Kiểm tra xem có phải là phút bắt đầu nến mới không (0, 15, 30, 45)
+            is_new_candle = current_minute % 15 == 0
             
-            if not X_live.empty:
-                prediction = model.predict(X_live.values)[0]
-                price = df_raw['Close'].iloc[-1]
-                
-                # --- LOGIC TÍN HIỆU (THRESHOLD) ---
-                # Ngưỡng để tránh nhiễu
-                threshold = 0.00025
-                tp, sl = 0.0, 0.0
-                
-                if prediction > 0.0008:
-                    sig, col, icon = "STRONG BUY", "#00ff88", "🔥"
-                    tp, sl = price * 1.006, price * 0.997
-                elif prediction > threshold:
-                    sig, col, icon = "BUY", "#2ecc71", "📈"
-                    tp, sl = price * 1.004, price * 0.998
-                elif prediction < -0.0008:
-                    sig, col, icon = "STRONG SELL", "#ff4b4b", "💀"
-                    tp, sl = price * 0.994, price * 1.003
-                elif prediction < -threshold:
-                    sig, col, icon = "SELL", "#e74c3c", "📉"
-                    tp, sl = price * 0.996, price * 1.002
-                else:
-                    sig, col, icon = "HOLD", "#f1c40f", "⚖️"
+            # Logic trong vòng lặp:
+            if is_new_candle or first_run:
+                    if not X_live.empty:
+                        prediction = model.predict(X_live.values)[0]
+                        price = df_raw['Close'].iloc[-1]
+                        
+                        # --- LOGIC TÍN HIỆU (THRESHOLD) ---
+                        # Ngưỡng để tránh nhiễu
+                        threshold = 0.00025
+                        tp, sl = 0.0, 0.0
+                        
+                        if prediction > 0.0008:
+                            sig, col, icon = "STRONG BUY", "#00ff88", "🔥"
+                            tp, sl = price * 1.006, price * 0.997
+                        elif prediction > threshold:
+                            sig, col, icon = "BUY", "#2ecc71", "📈"
+                            tp, sl = price * 1.004, price * 0.998
+                        elif prediction < -0.0008:
+                            sig, col, icon = "STRONG SELL", "#ff4b4b", "💀"
+                            tp, sl = price * 0.994, price * 1.003
+                        elif prediction < -threshold:
+                            sig, col, icon = "SELL", "#e74c3c", "📉"
+                            tp, sl = price * 0.996, price * 1.002
+                        else:
+                            sig, col, icon = "HOLD", "#f1c40f", "⚖️"
+                        
+                        first_run = True
     
             # --- PHẦN HIỂN THỊ CHIA ĐÔI MÀN HÌNH ---
             with placeholder.container():
@@ -368,7 +370,7 @@ while True:
                         </div>
                     """
                     st.components.v1.html(tv_widget, height=520)
-    first_run = False
+    time.sleep(60)
 
 
 
