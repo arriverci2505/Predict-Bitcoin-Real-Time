@@ -326,9 +326,7 @@ while True:
 
     if current_minute != last_minute:
         df_raw = get_data() 
-        missing = set(feature_cols) - set(df_features.columns)
-        if missing:
-            st.warning(f"⚠️ Cảnh báo: Thiếu dữ liệu cho các cột: {missing}")
+        
         if not df_raw.empty:
             df_features = engineer_features(df_raw)
             X_live = df_features[feature_cols].dropna().tail(1)
@@ -393,6 +391,7 @@ while True:
     
     # Nghỉ 0.5 giây để tiết kiệm CPU nhưng vẫn bắt kịp giây 00
     time.sleep(0.5)
+
 
 
 
