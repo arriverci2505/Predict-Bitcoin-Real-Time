@@ -326,7 +326,7 @@ while True:
             
             if not X_live.empty:
                 # Model mới trả về 3 mảng: (Xu hướng, Khoảng cách TP, Khoảng cách SL)
-                pred_price, pred_tp_dist, pred_sl_dist = model.predict(latest_row.values)
+                pred_price, pred_tp_dist, pred_sl_dist = model.predict(X_live.values)
                 
                 # Lấy giá trị đầu tiên vì predict trả về list
                 p_move = pred_price[0]
@@ -384,6 +384,7 @@ while True:
     
     # Nghỉ 0.5 giây để tiết kiệm CPU nhưng vẫn bắt kịp giây 00
     time.sleep(0.5)
+
 
 
 
