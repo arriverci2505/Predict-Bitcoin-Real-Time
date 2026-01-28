@@ -358,7 +358,7 @@ while True:
                     else:
                         st.warning("⚖️ Hệ thống đang ở trạng thái đi ngang - Chờ tín hiệu rõ ràng hơn.")
 
-                    st.caption(f"⏱️ Cập nhật cuối: {(datetime.now() + timedelta(hours = 7)).strftime('%H:%M:%S')}")
+                    st.caption(f"⏱️ Cập nhật lần cuối: {(datetime.now() + timedelta(hours = 7)).strftime('%H:%M:%S')}")
                     
                 # --- CỘT PHẢI: TRADINGVIEW CHART ---
                 with col_right:
@@ -386,6 +386,7 @@ while True:
                     """
                     st.components.v1.html(tv_widget, height=520)
     time.sleep(60)
+
 
 
 
