@@ -341,10 +341,11 @@ while True:
                         c2.metric("⚠️ Cắt lỗ (SL)", f"${sl:,.1f}")
                         
                         st.markdown(f"**Cường độ dự báo:** `{prediction:+.6%}`")
-                        st.caption(f"⏱️ Cập nhật cuối: {(datetime.now() + timedelta(hours = 7)).strftime('%H:%M:%S')}")
                     else:
                         st.warning("⚖️ Hệ thống đang ở trạng thái mất cân bằng - Chờ tín hiệu rõ ràng hơn.")
-            
+
+                    st.caption(f"⏱️ Cập nhật cuối: {(datetime.now() + timedelta(hours = 7)).strftime('%H:%M:%S')}")
+                    
                 # --- CỘT PHẢI: TRADINGVIEW CHART ---
                 with col_right:
                     st.markdown("### 📈 Real-time Market Chart")
@@ -371,6 +372,7 @@ while True:
                     """
                     st.components.v1.html(tv_widget, height=520)
     time.sleep(60)
+
 
 
 
