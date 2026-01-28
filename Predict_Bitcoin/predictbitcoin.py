@@ -121,8 +121,8 @@ def engineer_features(df):
     
     # Keltner Channels
     ema_20 = close_prev.ewm(span=20, adjust=False).mean()
-    col['Keltner_Upper'] = ema_20 + (df['ATR_14'] * 2)
-    col['Keltner_Lower'] = ema_20 - (df['ATR_14'] * 2)
+    col['Keltner_Upper'] = ema_20 + (col['ATR_14'] * 2)
+    col['Keltner_Lower'] = ema_20 - (col['ATR_14'] * 2)
     col['Keltner_Position'] = (close_prev - col['Keltner_Lower']) / \
                              (col['Keltner_Upper'] - col['Keltner_Lower'] + 1e-10)
     
@@ -140,7 +140,7 @@ def engineer_features(df):
     obv = (volume_prev * np.sign(df['Close'].diff())).fillna(0).cumsum()
     col['OBV'] = obv.shift(1)
     col['OBV_MA'] = col['OBV'].rolling(20).mean()
-    col['OBV_Ratio'] = col['OBV'] / (df['OBV_MA'] + 1e-10)
+    col['OBV_Ratio'] = col['OBV'] / (col['OBV_MA'] + 1e-10)
     
     # Money Flow Index (MFI)
     typical_price = (df['High'] + df['Low'] + df['Close']) / 3
@@ -371,6 +371,7 @@ while True:
                     """
                     st.components.v1.html(tv_widget, height=520)
     time.sleep(60)
+
 
 
 
