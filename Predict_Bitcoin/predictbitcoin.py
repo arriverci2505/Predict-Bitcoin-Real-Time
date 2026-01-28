@@ -237,7 +237,7 @@ def engineer_features(df):
     df['Target_Max_Favorable'] = df['High'].rolling(3).max().shift(-3) / df['Close'] - 1
     df['Target_Max_Adverse'] = df['Low'].rolling(3).min().shift(-3) / df['Close'] - 1
     
-    return df
+    return df.copy()
 
 # --- 3. HÀM LẤY DỮ LIỆU ---
 def get_data():
@@ -372,6 +372,7 @@ while True:
                     """
                     st.components.v1.html(tv_widget, height=520)
     time.sleep(60)
+
 
 
 
