@@ -202,10 +202,10 @@ def engineer_features(df):
     col['DayOfMonth'] = df.index.day
     
     # Cyclical encoding
-    col['Hour_Sin'] = np.sin(2 * np.pi * df['Hour'] / 24)
-    col['Hour_Cos'] = np.cos(2 * np.pi * df['Hour'] / 24)
-    col['Day_Sin'] = np.sin(2 * np.pi * df['DayOfWeek'] / 7)
-    col['Day_Cos'] = np.cos(2 * np.pi * df['DayOfWeek'] / 7)
+    col['Hour_Sin'] = np.sin(2 * np.pi * col['Hour'] / 24)
+    col['Hour_Cos'] = np.cos(2 * np.pi * col['Hour'] / 24)
+    col['Day_Sin'] = np.sin(2 * np.pi * col['DayOfWeek'] / 7)
+    col['Day_Cos'] = np.cos(2 * np.pi * col['DayOfWeek'] / 7)
     
     # Market session (crude approximation)
     col['Is_Asian_Session'] = ((col['Hour'] >= 0) & (col['Hour'] < 8)).astype(int)
@@ -371,6 +371,7 @@ while True:
                     """
                     st.components.v1.html(tv_widget, height=520)
     time.sleep(60)
+
 
 
 
