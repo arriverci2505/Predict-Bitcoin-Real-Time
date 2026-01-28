@@ -3,6 +3,7 @@ import ccxt
 import pandas as pd
 import joblib
 import os
+import gc
 import numpy as np
 from datetime import datetime, timedelta
 import streamlit.components.v1 as components
@@ -288,10 +289,7 @@ while True:
     df_raw = get_data()
 
     if not df_raw.empty:
-            df_features = engineer_features(df_raw)
-            X_live = df_features[feature_cols].dropna().tail(1)
-
-                # Lấy số phút hiện tại
+            # Lấy số phút hiện tại
             now = datetime.now()
             current_minute = now.minute
             first_run = True
@@ -300,6 +298,14 @@ while True:
             
             # Logic trong vòng lặp:
             if is_new_candle or first_run:
+                    # Giải phóng bộ nhớ từ lần chạy trước
+                    gc.collect() 
+                    
+                    df_raw = get_data()
+                    # Ép kiểu dữ liệu để thu gọn dung lượng
+                    df_features = engineer_features(df_raw).copy()
+                    df_features = engineer_features(df_raw)
+                    X_live = df_features[feature_cols].dropna().tail(1)
                     if not X_live.empty:
                         prediction = model.predict(X_live.values)[0]
                         price = df_raw['Close'].iloc[-1]
@@ -381,6 +387,7 @@ while True:
                     """
                     st.components.v1.html(tv_widget, height=520)
     time.sleep(60)
+
 
 
 
