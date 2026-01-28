@@ -49,9 +49,9 @@ def engineer_features(df):
         col[f'EMA_Dist_{period}'] = (close_prev - col[f'EMA_{period}']) / close_prev
     
     # Moving Average Crossovers
-    col['MA_Cross_Fast'] = (df['SMA_10'] - df['SMA_20']) / close_prev
-    col['MA_Cross_Medium'] = (df['SMA_20'] - df['SMA_50']) / close_prev
-    col['MA_Cross_Slow'] = (df['SMA_50'] - df['SMA_200']) / close_prev
+    col['MA_Cross_Fast'] = (col['SMA_10'] - col['SMA_20']) / close_prev
+    col['MA_Cross_Medium'] = (col['SMA_20'] - col['SMA_50']) / close_prev
+    col['MA_Cross_Slow'] = (col['SMA_50'] - col['SMA_200']) / close_prev
     
     # Price momentum
     for period in [1, 2, 3, 5, 10, 20]:
@@ -167,7 +167,7 @@ def engineer_features(df):
     col['Body_Direction'] = np.sign(df['Close'] - df['Open']).shift(1)
     
     # Candle range relative to ATR
-    col['Range_ATR_Ratio'] = (total_range / (df['ATR_14'] + 1e-10)).shift(1)
+    col['Range_ATR_Ratio'] = (total_range / (col['ATR_14'] + 1e-10)).shift(1)
     
     # 6. PATTERN RECOGNITION (Simple)
     
@@ -186,9 +186,9 @@ def engineer_features(df):
     
     # Previous candles returns
     for lag in [1, 2, 3, 5, 10]:
-        col[f'Return_Lag_{lag}'] = df[f'Return_1'].shift(lag)
-        col[f'RSI_14_Lag_{lag}'] = df['RSI_14'].shift(lag)
-        col[f'Volume_Ratio_20_Lag_{lag}'] = df['Volume_Ratio_20'].shift(lag)
+        col[f'Return_Lag_{lag}'] = col[f'Return_1'].shift(lag)
+        col[f'RSI_14_Lag_{lag}'] = col['RSI_14'].shift(lag)
+        col[f'Volume_Ratio_20_Lag_{lag}'] = col['Volume_Ratio_20'].shift(lag)
     
     # Consecutive up/down candles
     up_candle = (df['Close'] > df['Open']).astype(int).shift(1)
@@ -221,8 +221,8 @@ def engineer_features(df):
         df[f'Trend_Strength_{period}'] = returns / (volatility + 1e-10)
     
     # Volatility regime
-    col['Volatility_Regime'] = df['HV_20'].rolling(50).mean()
-    col['Volatility_Percentile'] = df['HV_20'].rolling(100).apply(
+    col['Volatility_Regime'] = col['HV_20'].rolling(50).mean()
+    col['Volatility_Percentile'] = col['HV_20'].rolling(100).apply(
         lambda x: (x.iloc[-1] > x).sum() / len(x) if len(x) > 0 else 0.5
     )
 
@@ -371,6 +371,7 @@ while True:
                     """
                     st.components.v1.html(tv_widget, height=520)
     time.sleep(60)
+
 
 
 
