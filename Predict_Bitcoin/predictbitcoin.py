@@ -261,8 +261,20 @@ st.markdown("""
 
 @st.cache_resource
 def load_ai_model():
-    model = joblib.load("BTC_USD_ensemble.pkl")
-    with open("BTC_USD_features.txt", 'r') as f:
+    # Xác định thư mục chứa file predictbitcoin.py hiện tại
+    base_path = os.path.dirname(__file__)
+    
+    # Kết hợp với tên file để tạo đường dẫn tuyệt đối
+    model_path = os.path.join(base_path, "BTC_USD_ensemble.pkl")
+    features_path = os.path.join(base_path, "BTC_USD_features.txt")
+    
+    # Kiểm tra tồn tại để báo lỗi rõ ràng trên Streamlit
+    if not os.path.exists(model_path):
+        st.error(f"❌ Không tìm thấy model tại: {model_path}")
+        st.stop()
+        
+    model = joblib.load(model_path)
+    with open(features_path, 'r') as f:
         features = [line.strip() for line in f.readlines()]
     return model, features
 
@@ -372,6 +384,7 @@ while True:
     
     # Nghỉ 0.5 giây để tiết kiệm CPU nhưng vẫn bắt kịp giây 00
     time.sleep(0.5)
+
 
 
 
