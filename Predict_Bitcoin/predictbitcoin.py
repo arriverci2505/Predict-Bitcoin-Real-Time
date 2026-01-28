@@ -261,13 +261,12 @@ st.markdown("""
 
 @st.cache_resource
 def load_ai_model():
-    # Model này bây giờ là Multi-output Ensemble
-    model = joblib.load("BTC_USD_ensemble.pkl") 
+    model = joblib.load("BTC_USD_ensemble.pkl")
     with open("BTC_USD_features.txt", 'r') as f:
         features = [line.strip() for line in f.readlines()]
     return model, features
-model, feature_cols = load_ai_model()
 
+model, feature_cols = load_ai_model()
 # --- KHỞI TẠO FRAMEWORK GIAO DIỆN TĨNH ---
 # Chia cột ngoài vòng lặp để Chart không bị load lại
 col_left, col_right = st.columns([1, 1.2])
@@ -373,6 +372,7 @@ while True:
     
     # Nghỉ 0.5 giây để tiết kiệm CPU nhưng vẫn bắt kịp giây 00
     time.sleep(0.5)
+
 
 
 
