@@ -230,8 +230,8 @@ def engineer_features(df):
     )
 
     # 10. TARGETS
-    df['Target_High_Pct'] = (df['High'].shift(-1) - df['Close']) / df['Close'] # Mục tiêu TP
-    df['Target_Low_Pct'] = (df['Low'].shift(-1) - df['Close']) / df['Close']  # Mục tiêu SL
+    col['Target_High_Pct'] = (df['High'].shift(-1) - df['Close']) / df['Close'] # Mục tiêu TP
+    col['Target_Low_Pct'] = (df['Low'].shift(-1) - df['Close']) / df['Close']  # Mục tiêu SL
 
     extra_features = pd.DataFrame(col, index=df.index)
 
@@ -245,7 +245,7 @@ def get_data():
     try:
         exchange = ccxt.kraken()
         # Tăng limit lên 300 để đủ dữ liệu tính SMA 200
-        ohlcv = exchange.fetch_ohlcv('BTC/USDT', timeframe='15m', limit=300)
+        ohlcv = exchange.fetch_ohlcv('BTC/USDT', timeframe='15m', limit=500)
         df = pd.DataFrame(ohlcv, columns=['Timestamp', 'Open', 'High', 'Low', 'Close', 'Volume'])
         df['Date'] = pd.to_datetime(df['Timestamp'], unit='ms') + timedelta(hours=7)
         df.set_index('Date', inplace=True)
@@ -391,6 +391,7 @@ while True:
     
     # Nghỉ 0.5 giây để tiết kiệm CPU nhưng vẫn bắt kịp giây 00
     time.sleep(0.5)
+
 
 
 
