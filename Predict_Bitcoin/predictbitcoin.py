@@ -364,7 +364,8 @@ while True:
                         </div>
                     """
                     st.components.v1.html(tv_widget, height=520)
-    time.sleep(1)
+    time.sleep(2)
+
 
 
 
