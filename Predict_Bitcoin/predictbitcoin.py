@@ -46,7 +46,7 @@ def engineer_features(df):
     # Exponential Moving Averages
     for period in [9, 12, 21, 26, 50]:
         col[f'EMA_{period}'] = close_prev.ewm(span=period, adjust=False).mean()
-        col[f'EMA_Dist_{period}'] = (close_prev - df[f'EMA_{period}']) / close_prev
+        col[f'EMA_Dist_{period}'] = (close_prev - col[f'EMA_{period}']) / close_prev
     
     # Moving Average Crossovers
     col['MA_Cross_Fast'] = (df['SMA_10'] - df['SMA_20']) / close_prev
@@ -67,22 +67,22 @@ def engineer_features(df):
         loss = (-delta.where(delta < 0, 0)).shift(1).rolling(period).mean()
         rs = gain / (loss + 1e-10)
         col[f'RSI_{period}'] = 100 - (100 / (1 + rs))
-        col[f'RSI_{period}_Norm'] = (df[f'RSI_{period}'] - 50) / 50
+        col[f'RSI_{period}_Norm'] = (col[f'RSI_{period}'] - 50) / 50
     
     # MACD (Moving Average Convergence Divergence)
     ema_12 = close_prev.ewm(span=12, adjust=False).mean()
     ema_26 = close_prev.ewm(span=26, adjust=False).mean()
     col['MACD'] = ema_12 - ema_26
-    col['MACD_Signal'] = df['MACD'].shift(1).ewm(span=9, adjust=False).mean()
-    col['MACD_Hist'] = df['MACD'] - df['MACD_Signal']
-    col['MACD_Hist_Norm'] = df['MACD_Hist'] / close_prev
+    col['MACD_Signal'] = col['MACD'].shift(1).ewm(span=9, adjust=False).mean()
+    col['MACD_Hist'] = col['MACD'] - col['MACD_Signal']
+    col['MACD_Hist_Norm'] = col['MACD_Hist'] / close_prev
     
     # Stochastic Oscillator
     for period in [14, 21]:
         low_min = low_prev.rolling(period).min()
         high_max = high_prev.rolling(period).max()
         col[f'Stoch_{period}'] = 100 * (close_prev - low_min) / (high_max - low_min + 1e-10)
-        col[f'Stoch_{period}_D'] = df[f'Stoch_{period}'].rolling(3).mean()
+        col[f'Stoch_{period}_D'] = col[f'Stoch_{period}'].rolling(3).mean()
     
     # Rate of Change (ROC)
     for period in [5, 10, 20]:
@@ -103,7 +103,7 @@ def engineer_features(df):
     
     for period in [7, 14, 21]:
         col[f'ATR_{period}'] = true_range.shift(1).rolling(period).mean()
-        col[f'ATR_{period}_Pct'] = df[f'ATR_{period}'] / close_prev
+        col[f'ATR_{period}_Pct'] = col[f'ATR_{period}'] / close_prev
     
     # Bollinger Bands
     for period in [20, 50]:
@@ -111,9 +111,9 @@ def engineer_features(df):
         std = close_prev.rolling(period).std()
         col[f'BB_Upper_{period}'] = sma + (std * 2)
         col[f'BB_Lower_{period}'] = sma - (std * 2)
-        col[f'BB_Width_{period}'] = (df[f'BB_Upper_{period}'] - df[f'BB_Lower_{period}']) / sma
-        col[f'BB_Position_{period}'] = (close_prev - df[f'BB_Lower_{period}']) / \
-                                      (df[f'BB_Upper_{period}'] - df[f'BB_Lower_{period}'] + 1e-10)
+        col[f'BB_Width_{period}'] = (col[f'BB_Upper_{period}'] - col[f'BB_Lower_{period}']) / sma
+        col[f'BB_Position_{period}'] = (close_prev - col[f'BB_Lower_{period}']) / \
+                                      (col[f'BB_Upper_{period}'] - col[f'BB_Lower_{period}'] + 1e-10)
     
     # Historical Volatility
     for period in [10, 20, 30]:
@@ -123,15 +123,15 @@ def engineer_features(df):
     ema_20 = close_prev.ewm(span=20, adjust=False).mean()
     col['Keltner_Upper'] = ema_20 + (df['ATR_14'] * 2)
     col['Keltner_Lower'] = ema_20 - (df['ATR_14'] * 2)
-    col['Keltner_Position'] = (close_prev - df['Keltner_Lower']) / \
-                             (df['Keltner_Upper'] - df['Keltner_Lower'] + 1e-10)
+    col['Keltner_Position'] = (close_prev - col['Keltner_Lower']) / \
+                             (col['Keltner_Upper'] - col['Keltner_Lower'] + 1e-10)
     
     # 4. VOLUME INDICATORS
     
     # Volume Moving Averages
     for period in [5, 10, 20]:
         col[f'Volume_MA_{period}'] = volume_prev.rolling(period).mean()
-        col[f'Volume_Ratio_{period}'] = volume_prev / (df[f'Volume_MA_{period}'] + 1e-10)
+        col[f'Volume_Ratio_{period}'] = volume_prev / (col[f'Volume_MA_{period}'] + 1e-10)
     
     # Volume Trend
     col['Volume_Trend'] = volume_prev.rolling(5).mean() / (volume_prev.rolling(20).mean() + 1e-10)
@@ -139,8 +139,8 @@ def engineer_features(df):
     # On-Balance Volume (OBV)
     obv = (volume_prev * np.sign(df['Close'].diff())).fillna(0).cumsum()
     col['OBV'] = obv.shift(1)
-    col['OBV_MA'] = df['OBV'].rolling(20).mean()
-    col['OBV_Ratio'] = df['OBV'] / (df['OBV_MA'] + 1e-10)
+    col['OBV_MA'] = col['OBV'].rolling(20).mean()
+    col['OBV_Ratio'] = col['OBV'] / (df['OBV_MA'] + 1e-10)
     
     # Money Flow Index (MFI)
     typical_price = (df['High'] + df['Low'] + df['Close']) / 3
@@ -172,15 +172,15 @@ def engineer_features(df):
     # 6. PATTERN RECOGNITION (Simple)
     
     # Doji (thân nến rất nhỏ)
-    col['Is_Doji'] = (df['Body_Size'] < 0.1).astype(int)
+    col['Is_Doji'] = (col['Body_Size'] < 0.1).astype(int)
     
     # Hammer / Hanging Man
-    col['Is_Hammer'] = ((df['Lower_Shadow'] > 2 * df['Body_Size']) & 
-                       (df['Upper_Shadow'] < df['Body_Size'])).astype(int)
+    col['Is_Hammer'] = ((col['Lower_Shadow'] > 2 * col['Body_Size']) & 
+                       (col['Upper_Shadow'] < col['Body_Size'])).astype(int)
     
     # Shooting Star / Inverted Hammer
-    col['Is_Shooting_Star'] = ((df['Upper_Shadow'] > 2 * df['Body_Size']) & 
-                              (df['Lower_Shadow'] < df['Body_Size'])).astype(int)
+    col['Is_Shooting_Star'] = ((col['Upper_Shadow'] > 2 * col['Body_Size']) & 
+                              (col['Lower_Shadow'] < col['Body_Size'])).astype(int)
     
     # 7. LAG FEATURES (Temporal patterns)
     
@@ -208,9 +208,9 @@ def engineer_features(df):
     col['Day_Cos'] = np.cos(2 * np.pi * df['DayOfWeek'] / 7)
     
     # Market session (crude approximation)
-    col['Is_Asian_Session'] = ((df['Hour'] >= 0) & (df['Hour'] < 8)).astype(int)
-    col['Is_European_Session'] = ((df['Hour'] >= 8) & (df['Hour'] < 16)).astype(int)
-    col['Is_US_Session'] = ((df['Hour'] >= 16) & (df['Hour'] < 24)).astype(int)
+    col['Is_Asian_Session'] = ((col['Hour'] >= 0) & (col['Hour'] < 8)).astype(int)
+    col['Is_European_Session'] = ((col['Hour'] >= 8) & (col['Hour'] < 16)).astype(int)
+    col['Is_US_Session'] = ((col['Hour'] >= 16) & (col['Hour'] < 24)).astype(int)
 
     # 9. REGIME DETECTION
     
@@ -371,6 +371,7 @@ while True:
                     """
                     st.components.v1.html(tv_widget, height=520)
     time.sleep(60)
+
 
 
 
