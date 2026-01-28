@@ -329,7 +329,7 @@ while True:
                 pred_price, pred_tp_dist, pred_sl_dist = model.predict(X_live.values)
                 
                 # Lấy giá trị đầu tiên vì predict trả về list
-                p_move = pred_price[0]
+                prediction= pred_price[0]
                 p_tp = pred_tp_dist[0]
                 p_sl = pred_sl_dist[0]
                 price = df_raw['Close'].iloc[-1]
@@ -384,6 +384,7 @@ while True:
     
     # Nghỉ 0.5 giây để tiết kiệm CPU nhưng vẫn bắt kịp giây 00
     time.sleep(0.5)
+
 
 
 
