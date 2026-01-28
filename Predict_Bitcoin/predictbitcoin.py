@@ -27,6 +27,9 @@ class EnsembleModel:
 # --- 2. HÀM TÍNH TOÁN FEATURE (ĐƯA RA NGOÀI VÒNG LẶP) ---
 def engineer_features(df):
     df = df.copy()
+    
+    new_cols = {}
+    
     close_prev = df['Close'].shift(1)
     high_prev = df['High'].shift(1)
     low_prev = df['Low'].shift(1)
@@ -236,8 +239,14 @@ def engineer_features(df):
     # Risk metrics
     df['Target_Max_Favorable'] = df['High'].rolling(3).max().shift(-3) / df['Close'] - 1
     df['Target_Max_Adverse'] = df['Low'].rolling(3).min().shift(-3) / df['Close'] - 1
+
+    # Chuyển Dictionary thành DataFrame
+    features_df = pd.DataFrame(new_cols, index=df.index)
     
-    return df.copy()
+    # Dùng pd.concat để nối vào df gốc chỉ với 1 lệnh duy nhất
+    final_df = pd.concat([df, features_df], axis=1)
+    
+    return final_df.dropna().copy()
 
 # --- 3. HÀM LẤY DỮ LIỆU ---
 def get_data():
@@ -372,6 +381,7 @@ while True:
                     """
                     st.components.v1.html(tv_widget, height=520)
     time.sleep(60)
+
 
 
 
