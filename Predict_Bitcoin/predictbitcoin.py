@@ -250,10 +250,12 @@ def get_data():
 # --- 4. GIAO DIỆN ---
 st.set_page_config(page_title="BTC AI Terminal", layout="wide")
 
+# CSS để giao diện đẹp và không bị giật
 st.markdown("""
     <style>
     .main { background-color: #0e1117; }
     .stMetric { background-color: #161b22; border-radius: 10px; padding: 15px; border: 1px solid #30363d; }
+    [data-testid="stStatusWidget"] { display: none; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -266,57 +268,76 @@ def load_ai_model():
     return model, features
 
 model, feature_cols = load_ai_model()
-placeholder = st.empty()
 
-last_minute = -1
+# --- KHỞI TẠO FRAMEWORK GIAO DIỆN TĨNH ---
+# Chia cột ngoài vòng lặp để Chart không bị load lại
+col_left, col_right = st.columns([1, 1.2])
+
+with col_right:
+    st.markdown("### 📈 Real-time Market Chart")
+    tv_widget = """
+        <div style="height:550px;">
+            <div id="tv_chart_main" style="height:100%;"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+            <script type="text/javascript">
+            new TradingView.widget({
+                "autosize": true,
+                "symbol": "KRAKEN:BTCUSDT",
+                "interval": "15",
+                "timezone": "Asia/Ho_Chi_Minh",
+                "theme": "dark",
+                "style": "1",
+                "locale": "vi_VN",
+                "enable_publishing": false,
+                "allow_symbol_change": true,
+                "container_id": "tv_chart_main"
+            });
+            </script>
+        </div>
+    """
+    components.html(tv_widget, height=570)
+
+# Tạo placeholder CHỈ cho cột bên trái (Dự đoán AI)
+with col_left:
+    signal_placeholder = st.empty()
 
 # --- 5. VÒNG LẶP CHÍNH ---
+last_minute = -1
 while True:
-    now = datetime.now() + timedelta(hours=7) # Giờ VN
+    now = datetime.now() + timedelta(hours=7)
     current_minute = now.minute
 
-    # Kiểm tra nếu đã bước sang phút mới
     if current_minute != last_minute:
-        # 1. LẤY DỮ LIỆU MỚI NHẤT 
         df_raw = get_data() 
         
         if not df_raw.empty:
-            # 2. TÍNH TOÁN FEATURES
-            # Ép kiểu dữ liệu để thu gọn dung lượng
-            df_features = engineer_features(df_raw).copy()
+            df_features = engineer_features(df_raw)
             X_live = df_features[feature_cols].dropna().tail(1)
-            if not X_live.empty:
-                    prediction = model.predict(X_live.values)[0]
-                    price = df_raw['Close'].iloc[-1]
-                        
-                    # --- LOGIC TÍN HIỆU (THRESHOLD) ---
-                    # Ngưỡng để tránh nhiễu
-                    threshold = 0.00025
-                    tp, sl = 0.0, 0.0
-                        
-                    if prediction > 0.0008:
-                        sig, col, icon = "STRONG BUY", "#00ff88", "🔥"
-                        tp, sl = price * 1.006, price * 0.997
-                    elif prediction > threshold:
-                        sig, col, icon = "BUY", "#2ecc71", "📈"
-                        tp, sl = price * 1.004, price * 0.998
-                    elif prediction < -0.0008:
-                        sig, col, icon = "STRONG SELL", "#ff4b4b", "💀"
-                        tp, sl = price * 0.994, price * 1.003
-                    elif prediction < -threshold:
-                        sig, col, icon = "SELL", "#e74c3c", "📉"
-                        tp, sl = price * 0.996, price * 1.002
-                    else:
-                        sig, col, icon = "HOLD", "#f1c40f", "⚖️"
-                        
-            last_minute = current_minute
-            # --- PHẦN HIỂN THỊ CHIA ĐÔI MÀN HÌNH ---
-            with placeholder.container():
-                # Chia làm 2 cột với tỷ lệ 1:1.2 (bên phải chart rộng hơn chút cho dễ nhìn)
-                col_left, col_right = st.columns([1, 1.2])
             
-                # --- CỘT TRÁI: QUẢN LÝ LỆNH ---
-                with col_left:
+            if not X_live.empty:
+                prediction = model.predict(X_live.values)[0]
+                price = df_raw['Close'].iloc[-1]
+                
+                # Logic phân loại tín hiệu (Giữ nguyên của bạn)
+                threshold = 0.00025
+                if prediction > 0.0008:
+                    sig, col, icon = "STRONG BUY", "#00ff88", "🔥"
+                    tp, sl = price * 1.006, price * 0.997
+                elif prediction > threshold:
+                    sig, col, icon = "BUY", "#2ecc71", "📈"
+                    tp, sl = price * 1.004, price * 0.998
+                elif prediction < -0.0008:
+                    sig, col, icon = "STRONG SELL", "#ff4b4b", "💀"
+                    tp, sl = price * 0.994, price * 1.003
+                elif prediction < -threshold:
+                    sig, col, icon = "SELL", "#e74c3c", "📉"
+                    tp, sl = price * 0.996, price * 1.002
+                else:
+                    sig, col, icon = "HOLD", "#f1c40f", "⚖️"
+                    tp, sl = 0.0, 0.0
+
+                # --- CHỈ CẬP NHẬT PHẦN TÍN HIỆU ---
+                with signal_placeholder.container():
                     st.subheader("🤖 Bitcoin Alpha: Neural Predictor")
                     st.markdown(f"""
                         <div style="background-color:{col}22; border: 2px solid {col}; padding:20px; border-radius:15px; text-align:center;">
@@ -324,47 +345,26 @@ while True:
                             <h2 style="color:white; margin:10px 0;">${price:,.2f}</h2>
                         </div>
                     """, unsafe_allow_html=True)
-            
+                    
                     st.write("---")
                     
-                    # Phần TP/SL và Chi tiết
                     if "HOLD" not in sig:
                         c1, c2 = st.columns(2)
                         c1.metric("🎯 Chốt lời (TP)", f"${tp:,.1f}")
                         c2.metric("⚠️ Cắt lỗ (SL)", f"${sl:,.1f}")
-                        
                         st.markdown(f"**Cường độ dự báo:** `{prediction:+.6%}`")
                     else:
-                        st.warning("⚖️ Hệ thống đang ở trạng thái đi ngang - Chờ tín hiệu rõ ràng hơn.")
+                        st.warning("⚖️ Hệ thống đang chờ tín hiệu rõ ràng hơn.")
 
-                    st.caption(f"⏱️ Cập nhật lần cuối: {(datetime.now() + timedelta(hours = 7)).strftime('%H:%M:%S')}")
-                    
-                # --- CỘT PHẢI: TRADINGVIEW CHART ---
-                with col_right:
-                    st.markdown("### 📈 Real-time Market Chart")
-                    # Mã nhúng TradingView
-                    tv_widget = f"""
-                        <div style="height:500px;">
-                            <div id="tv_chart_main" style="height:100%;"></div>
-                            <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-                            <script type="text/javascript">
-                            new TradingView.widget({{
-                                "autosize": true,
-                                "symbol": "KRAKEN:BTCUSDT",
-                                "interval": "15",
-                                "timezone": "Asia/Ho_Chi_Minh",
-                                "theme": "dark",
-                                "style": "1",
-                                "locale": "vi_VN",
-                                "enable_publishing": false,
-                                "allow_symbol_change": true,
-                                "container_id": "tv_chart_main"
-                            }});
-                            </script>
-                        </div>
-                    """
-                    st.components.v1.html(tv_widget, height=520)
-    time.sleep(2)
+                    st.caption(f"⏱️ Cập nhật: {now.strftime('%H:%M:%S')}")
+
+        last_minute = current_minute
+        # Đợi một chút để tránh vòng lặp chạy quá nhanh
+        time.sleep(2.5)
+    
+    # Nghỉ 0.5 giây để tiết kiệm CPU nhưng vẫn bắt kịp giây 00
+    time.sleep(0.5)
+
 
 
 
