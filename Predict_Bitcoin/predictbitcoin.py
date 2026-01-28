@@ -252,7 +252,7 @@ def get_data():
 
 # --- 4. GIAO DIỆN ---
 st.set_page_config(page_title="BTC AI Terminal", layout="wide")
-
+col_left, col_right = st.columns([1, 1.2])
 # CSS để giao diện đẹp và không bị giật
 st.markdown("""
     <style>
@@ -283,7 +283,7 @@ def load_ai_model():
 
 model, feature_cols = load_ai_model()
 
-col_left, col_right = st.columns([1, 2])
+
 
 with col_right:
     st.markdown("### 📈 Real-time Market Chart")
@@ -386,6 +386,7 @@ while True:
     
     # Nghỉ 0.5 giây để tiết kiệm CPU nhưng vẫn bắt kịp giây 00
     time.sleep(0.5)
+
 
 
 
