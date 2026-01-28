@@ -273,24 +273,14 @@ while True:
     df_raw = get_data()
 
     if not df_raw.empty:
-            # Lấy số phút hiện tại
-            now = datetime.now()
-            current_minute = now.minute
-            first_run = True
-            # Kiểm tra xem có phải là phút bắt đầu nến mới không (0, 15, 30, 45)
-            is_new_candle = current_minute % 15 == 0
-            
-            # Logic trong vòng lặp:
-            if is_new_candle or first_run:
-                    # Giải phóng bộ nhớ từ lần chạy trước
-                    gc.collect() 
+            gc.collect() 
                     
-                    df_raw = get_data()
-                    # Ép kiểu dữ liệu để thu gọn dung lượng
-                    df_features = engineer_features(df_raw).copy()
-                    df_features = engineer_features(df_raw)
-                    X_live = df_features[feature_cols].dropna().tail(1)
-                    if not X_live.empty:
+            df_raw = get_data()
+            # Ép kiểu dữ liệu để thu gọn dung lượng
+            df_features = engineer_features(df_raw).copy()
+            df_features = engineer_features(df_raw)
+            X_live = df_features[feature_cols].dropna().tail(1)
+                if not X_live.empty:
                         prediction = model.predict(X_live.values)[0]
                         price = df_raw['Close'].iloc[-1]
                         
@@ -313,8 +303,6 @@ while True:
                             tp, sl = price * 0.996, price * 1.002
                         else:
                             sig, col, icon = "HOLD", "#f1c40f", "⚖️"
-                        
-                        first_run = False
     
             # --- PHẦN HIỂN THỊ CHIA ĐÔI MÀN HÌNH ---
             with placeholder.container():
@@ -371,6 +359,7 @@ while True:
                     """
                     st.components.v1.html(tv_widget, height=520)
     time.sleep(60)
+
 
 
 
