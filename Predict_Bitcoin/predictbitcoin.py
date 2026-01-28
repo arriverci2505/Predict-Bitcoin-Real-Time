@@ -238,8 +238,11 @@ def engineer_features(df):
     # Risk metrics
     df['Target_Max_Favorable'] = df['High'].rolling(3).max().shift(-3) / df['Close'] - 1
     df['Target_Max_Adverse'] = df['Low'].rolling(3).min().shift(-3) / df['Close'] - 1
+
+    f_df = pd.DataFrame(new_cols, index=df.index)
+    final_df = pd.concat([df, f_df], axis=1)
     
-    return df.dropna().copy()
+    return final_df.dropna().copy()
 
 # --- 3. HÀM LẤY DỮ LIỆU ---
 def get_data():
@@ -379,6 +382,7 @@ while True:
                     """
                     st.components.v1.html(tv_widget, height=520)
     time.sleep(60)
+
 
 
 
