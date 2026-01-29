@@ -268,8 +268,8 @@ def load_ai_model():
     base_path = os.path.dirname(__file__)
     
     # Kết hợp với tên file để tạo đường dẫn tuyệt đối
-    model_path = os.path.join(base_path, "BTC_USD_ensemble.pkl")
-    features_path = os.path.join(base_path, "BTC_USD_features.txt")
+    model_path = os.path.join(base_path, "BTC_USDT_ensemble.pkl")
+    features_path = os.path.join(base_path, "BTC_USDT_features.txt")
     
     # Kiểm tra tồn tại để báo lỗi rõ ràng trên Streamlit
     if not os.path.exists(model_path):
@@ -386,6 +386,7 @@ while True:
     
     # Nghỉ 0.5 giây để tiết kiệm CPU nhưng vẫn bắt kịp giây 00
     time.sleep(0.5)
+
 
 
 
